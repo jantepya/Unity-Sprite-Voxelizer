@@ -31,16 +31,15 @@ public class VoxelizerUtil
         Color32[] colorBuffer = texture.GetPixels32();
 
         List<Vector3> vertices = GenerateVertices(height, width);
-        int[] triangles = GenerateTriangles(colorBuffer, vertices, width);
+        int[] triangles = GenerateTriangles(colorBuffer,  width);
 
         Mesh mesh = new Mesh();
 
         mesh.SetVertices(vertices);
         mesh.SetTriangles(triangles, 0);
 
+        mesh.Optimize();
 
-        //mesh.Optimize();
-        
         return mesh;
     }
 
@@ -66,20 +65,32 @@ public class VoxelizerUtil
         return vertices;
     }
 
-    private static int[] GenerateTriangles(Color32[] colorBuffer, List<Vector3> vertices, int width)
+    private static int[] GenerateTriangles(Color32[] colorBuffer, int width)
     {
+        // triangle values are indices of vertices array
         List<int> triangles = new List<int>();
-        width = 2*(width);
 
-        foreach (var item in vertices)
-        {
-            Debug.Log(item.ToString());
-        }
+        int offset = 2*(width + 1);
+        int pad = 0;
+        int row = 2 * width;
 
-        for (int i = 0; i < 2*colorBuffer.Length; i+=2)
+        // colorbuffer pixels are laid out left to right, 
+        // bottom to top (i.e. row after row)
+        for (int j = 0; j < 2*colorBuffer.Length; j+=2)
         {
-            if (colorBuffer[i/2].a != 0)
+            // ignore right-most column of vertices
+            if (j > 0 && (j + pad) % row == 0)
             {
+                // row = 2w + n(2w+2)
+                row += ((2 * width) + 2);
+                pad += 2;
+            }
+
+            if (colorBuffer[j/2].a != 0)
+            {
+                int i = j + pad;
+
+                // Bottom 
                 triangles.Add(i + 1);
                 triangles.Add(i);
                 triangles.Add(i + 2);
@@ -88,106 +99,53 @@ public class VoxelizerUtil
                 triangles.Add(i + 3);
                 triangles.Add(i + 1);
 
-                //triangles.Add(i + 2); 
-                //triangles.Add(i);
-                //triangles.Add(i + width);
+                // Top
+                triangles.Add(i + offset + 2);
+                triangles.Add(i + offset);
+                triangles.Add(i + offset + 3);
 
-                //triangles.Add(i + 2);
-                //triangles.Add(i + width);
-                //triangles.Add(i + width + 2);
+                triangles.Add(i + offset + 3);
+                triangles.Add(i + offset);
+                triangles.Add(i + offset + 1);
 
-                //triangles.Add(i + width + 2);
-                //triangles.Add(i + width);
-                //triangles.Add(i + width + 3);
+                // Front
+                triangles.Add(i + 2);
+                triangles.Add(i);
+                triangles.Add(i + offset);
 
-                //triangles.Add(i + width + 3);
-                //triangles.Add(i + width);
-                //triangles.Add(i + width + 1);
+                triangles.Add(i + 2);
+                triangles.Add(i + offset);
+                triangles.Add(i + offset + 2);
 
-                //triangles.Add(i + 1);
-                //triangles.Add(i + width + 1);
-                //triangles.Add(i + width);
+                // Left
+                triangles.Add(i + 1);
+                triangles.Add(i + offset + 1);
+                triangles.Add(i + offset);
 
-                //triangles.Add(i + width);
-                //triangles.Add(i);
-                //triangles.Add(i + 1);
+                triangles.Add(i + offset);
+                triangles.Add(i);
+                triangles.Add(i + 1);
 
-                //triangles.Add(i + 1);
-                //triangles.Add(i);
-                //triangles.Add(i + 2);
+                // Back
+                triangles.Add(i + 1);
+                triangles.Add(i + 3);
+                triangles.Add(i + offset + 3);
 
-                //triangles.Add(i + 2);
-                //triangles.Add(i + 3);
-                //triangles.Add(i + 1);
+                triangles.Add(i + offset + 3);
+                triangles.Add(i + offset + 1);
+                triangles.Add(i + 1);
 
-                //triangles.Add(i + 1);
-                //triangles.Add(i + 3);
-                //triangles.Add(i + width + 3);
+                // Right
+                triangles.Add(i + offset + 3);
+                triangles.Add(i + 3);
+                triangles.Add(i + offset + 2);
 
-                //triangles.Add(i + width + 3);
-                //triangles.Add(i + width + 2);
-                //triangles.Add(i + 1);
-
-                //triangles.Add(i + width + 3);
-                //triangles.Add(i + 3);
-                //triangles.Add(i + width + 2);
-
-                //triangles.Add(i + width + 2);
-                //triangles.Add(i + 3);
-                //triangles.Add(i + 2);
+                triangles.Add(i + offset + 2);
+                triangles.Add(i + 3);
+                triangles.Add(i + 2);
             }
         }
         
-
-        //triangles.Add(1);
-        //triangles.Add(0);
-        //triangles.Add(2);
-
-        //triangles.Add(1);
-        //triangles.Add(2);
-        //triangles.Add(3);
-
-        //triangles.Add(3);
-        //triangles.Add(2);
-        //triangles.Add(7);
-
-        //triangles.Add(7);
-        //triangles.Add(2);
-        //triangles.Add(6);
-
-        //triangles.Add(4);
-        //triangles.Add(6);
-        //triangles.Add(2);
-
-        //triangles.Add(2);
-        //triangles.Add(0);
-        //triangles.Add(4);
-
-        //triangles.Add(4);
-        //triangles.Add(0);
-        //triangles.Add(1);
-
-        //triangles.Add(1);
-        //triangles.Add(5);
-        //triangles.Add(4);
-
-        //triangles.Add(4);
-        //triangles.Add(5);
-        //triangles.Add(7);
-
-        //triangles.Add(7);
-        //triangles.Add(6);
-        //triangles.Add(4);
-
-        //triangles.Add(7);
-        //triangles.Add(5);
-        //triangles.Add(3);
-
-        //triangles.Add(3);
-        //triangles.Add(5);
-        //triangles.Add(1);
-
-
         return triangles.ToArray();
     }
 }
