@@ -35,24 +35,16 @@ public class VoxelizerUtil
         List<Vector3> vertices = GenerateVertices(height, width);
         mesh.SetVertices(vertices);
 
+        List<Vector3> normals = GenerateNormals(height, width);
+        mesh.SetNormals(normals);
+
+        List<Color32> vertexColors = GenerateColors(colorBuffer, height, width);
+        mesh.SetColors(vertexColors);
 
         int[] triangles = GenerateTriangles(colorBuffer, width);
         mesh.SetTriangles(triangles, 0);
 
-        //foreach (var v in vertices)
-        //{
-        //    Debug.Log(v.ToString());
-        //}
-
         mesh.Optimize();
-
-        //List<Vector3> normals = GenerateNormals(colorBuffer, width);
-        //mesh.SetNormals(normals);
-
-
-        //List<Color32> vertexColors = GenerateColors(colorBuffer, height, width);
-        //mesh.SetColors(vertexColors);
-
 
         return mesh;
     }
@@ -65,28 +57,28 @@ public class VoxelizerUtil
     {
         List<Vector3> vertices = new List<Vector3>(24*(height * width));
 
-        float s = 1f;
+        float scale = 1f;
 
         for (int i = height-1; i >= 0 ; i--)
         {
-            float y = -i * s;
+            float y = -i * scale;
             for (int j = 0; j < width; j++)
             {
-                float x = j * s;
+                float x = j * scale;
 
                 Vector3[] cube = new Vector3[8];
 
                 // bottom
-                cube[0] = new Vector3(x, y, s);
-                cube[1] = new Vector3(x + s, y, s);
-                cube[2] = new Vector3(x + s, y, -s);
-                cube[3] = new Vector3(x, y, -s);
+                cube[0] = new Vector3(x, y, scale);
+                cube[1] = new Vector3(x + scale, y, scale);
+                cube[2] = new Vector3(x + scale, y, -scale);
+                cube[3] = new Vector3(x, y, -scale);
 
                 // top
-                cube[4] = new Vector3(x, y + s, s);
-                cube[5] = new Vector3(x + s, y + s, s);
-                cube[6] = new Vector3(x + s, y + s, -s);
-                cube[7] = new Vector3(x, y + s, -s);
+                cube[4] = new Vector3(x, y + scale, scale);
+                cube[5] = new Vector3(x + scale, y + scale, scale);
+                cube[6] = new Vector3(x + scale, y + scale, -scale);
+                cube[7] = new Vector3(x, y + scale, -scale);
 
                 vertices.AddRange(new List<Vector3>
                 {
@@ -108,17 +100,12 @@ public class VoxelizerUtil
         // triangle values are indices of vertices array
         List<int> triangles = new List<int>();
 
-        //int offset = 2*(width + 1);
-        //int pad = 0;
-        //int row = 2 * width;
-
         // colorbuffer pixels are laid out left to right, 
         // bottom to top (i.e. row after row)
         for (int i = 0; i < 24*colorBuffer.Length; i+=24)
         {
             if (colorBuffer[i/24].a != 0)
             {
-                Debug.Log(i);
                 triangles.AddRange(new int[]
                 {
                     // Bottom
@@ -145,113 +132,36 @@ public class VoxelizerUtil
 	                i + 23, i + 21, i + 20,
                     i + 23, i + 22, i + 21,
                 });
-
-                //// Bottom 
-                //triangles.Add(i + 3);
-                //triangles.Add(i + 1);
-                //triangles.Add(i);
-
-                //triangles.Add(i + 3);
-                //triangles.Add(i + 2);
-                //triangles.Add(i + 1);
-
-                //// Top
-                //triangles.Add(i + offset + 2);
-                //triangles.Add(i + offset);
-                //triangles.Add(i + offset + 3);
-
-                //triangles.Add(i + offset + 3);
-                //triangles.Add(i + offset);
-                //triangles.Add(i + offset + 1);
-
-                //// Front
-                //triangles.Add(i + 2);
-                //triangles.Add(i);
-                //triangles.Add(i + offset);
-
-                //triangles.Add(i + 2);
-                //triangles.Add(i + offset);
-                //triangles.Add(i + offset + 2);
-
-                //// Left
-                //triangles.Add(i + 1);
-                //triangles.Add(i + offset + 1);
-                //triangles.Add(i + offset);
-
-                //triangles.Add(i + offset);
-                //triangles.Add(i);
-                //triangles.Add(i + 1);
-
-                //// Back
-                //triangles.Add(i + 1);
-                //triangles.Add(i + 3);
-                //triangles.Add(i + offset + 3);
-
-                //triangles.Add(i + offset + 3);
-                //triangles.Add(i + offset + 1);
-                //triangles.Add(i + 1);
-
-                //// Right
-                //triangles.Add(i + offset + 3);
-                //triangles.Add(i + 3);
-                //triangles.Add(i + offset + 2);
-
-                //triangles.Add(i + offset + 2);
-                //triangles.Add(i + 3);
-                //triangles.Add(i + 2);
             }
         }
         
         return triangles.ToArray();
     }
 
-    private static List<Vector3> GenerateNormals(Color32[] colorBuffer, int width)
+    private static List<Vector3> GenerateNormals(int height, int width)
     {
         List<Vector3> normals = new List<Vector3>();
 
-        int offset = 2 * (width + 1);
-        int pad = 0;
-        int row = 2 * width;
+        Vector3 up = Vector3.up;
+        Vector3 down = Vector3.down;
+        Vector3 forward = Vector3.forward;
+        Vector3 back = Vector3.back;
+        Vector3 left = Vector3.left;
+        Vector3 right = Vector3.right;
 
-        // colorbuffer pixels are laid out left to right, 
-        // bottom to top (i.e. row after row)
-        for (int j = 0; j < 2 * colorBuffer.Length; j += 2)
+        for (int i = height - 1; i >= 0; i--)
         {
-            // ignore right-most column of vertices
-            if (j > 0 && (j + pad) % row == 0)
+            for (int j = 0; j < width; j++)
             {
-                // index of last columns -> 2w + n(2w+2)
-                row += ((2 * width) + 2);
-                pad += 2;
-            }
-
-            if (colorBuffer[j / 2].a != 0)
-            {
-                int i = j + pad;
-
-                // Bottom 
-                normals.Add(new Vector3(0, -1, 0));
-                normals.Add(new Vector3(0, -1, 0));
-
-                // Top
-                normals.Add(new Vector3(0, 1, 0));
-                normals.Add(new Vector3(0, 1, 0));
-
-                // Front
-                normals.Add(new Vector3(0, 0, -1));
-                normals.Add(new Vector3(0, 0, -1));
-
-                // Left
-                normals.Add(new Vector3(-1, 0, 0));
-                normals.Add(new Vector3(-1, 0, 0));
-
-                // Back
-                normals.Add(new Vector3(0, 0, 1));
-                normals.Add(new Vector3(0, 0, 1));
-
-                // Right
-                normals.Add(new Vector3(1, 0, 0));
-                normals.Add(new Vector3(1, 0, 0));
+                normals.AddRange(new List<Vector3>
+                {
+                    down, down, down, down,             // Bottom
+	                left, left, left, left,             // Left
+	                forward, forward, forward, forward,	// Front
+	                back, back, back, back,             // Back
+	                right, right, right, right,         // Right
+	                up, up, up, up	                    // Top
+                });
             }
         }
 
@@ -261,20 +171,14 @@ public class VoxelizerUtil
     private static List<Color32> GenerateColors(Color32[] colorBuffer, int height, int width)
     {
         List<Color32> vertexColors = new List<Color32>();
-        for (int i = height - 1; i >= 0; i--)
+        for (int i = 0; i < height; i++)
         {
             for (int j = 0; j < width; j++)
             {
-                if (colorBuffer[j + i * width].a != 0)
+                Color32 c = colorBuffer[j + i * width];
+                for (int k = 0; k < 24; k++)
                 {
-                    vertexColors.Add(colorBuffer[j + i * width]);
-                    vertexColors.Add(colorBuffer[j + i * width]);
-
-                    vertexColors.Add(colorBuffer[j + i * width]);
-                    vertexColors.Add(colorBuffer[j + i * width]);
-
-                    vertexColors.Add(colorBuffer[j + i * width]);
-                    vertexColors.Add(colorBuffer[j + i * width]);
+                    vertexColors.Add(c);
                 }
             }
         }
