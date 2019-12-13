@@ -156,11 +156,11 @@ public class VoxelizerUtil
                 normals.AddRange(new List<Vector3>
                 {
                     down, down, down, down,             // Bottom
-	                left, left, left, left,             // Left
-	                forward, forward, forward, forward,	// Front
-	                back, back, back, back,             // Back
-	                right, right, right, right,         // Right
-	                up, up, up, up	                    // Top
+                    left, left, left, left,             // Left
+                    forward, forward, forward, forward,	// Front
+                    back, back, back, back,             // Back
+                    right, right, right, right,         // Right
+                    up, up, up, up	                    // Top
                 });
             }
         }
