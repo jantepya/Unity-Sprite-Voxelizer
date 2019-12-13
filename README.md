@@ -1,6 +1,6 @@
 # Unity Sprite Voxelizer
 
-Convert 2D sprites into 3D voxel meshes.
+Convert 2D sprites into 3D voxel meshes in Unity.
 
 <img src="./Docs/example.jpg" data-canonical-src="./Docs/example.jpg" width="500"/>
 
