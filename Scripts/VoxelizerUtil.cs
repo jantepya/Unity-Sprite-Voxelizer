@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class VoxelizerUtil
@@ -9,16 +8,16 @@ public class VoxelizerUtil
      */
     public static void VoxelizeSprite(Sprite sprite)
     {
-        Debug.Log(sprite.name);
+        var mesh = VoxelizeTexture2D(sprite.texture);
 
-        Mesh mesh = VoxelizeTexture2D(sprite.texture);
-
-        GameObject sprite3D = new GameObject(sprite.name + " 3D");
+        var sprite3D = new GameObject(sprite.name + " 3D");
         
 
-        MeshFilter meshFilter = sprite3D.AddComponent<MeshFilter>();
+        var meshFilter = sprite3D.AddComponent<MeshFilter>();
         meshFilter.sharedMesh = mesh;
-        sprite3D.AddComponent<MeshRenderer>();
+
+        var meshRenderer = sprite3D.AddComponent<MeshRenderer>();
+        meshRenderer.material = Resources.Load<Material>("Materials/3DSpriteMaterial");
     }
 
     /*
@@ -51,7 +50,7 @@ public class VoxelizerUtil
 
 
     /*
-     * 
+     * Generate 24 vertices cube for every pixel in the texture
      */
     private static List<Vector3> GenerateVertices(int height, int width)
     {
