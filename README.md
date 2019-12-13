@@ -1,3 +1,6 @@
-# Unity-Sprite-Voxelizer
+# Unity Sprite Voxelizer
 
-Work in progress...
+Convert 2D sprites into 3D voxel meshes.
+
+<img src="./example.JPG" data-canonical-src="./example.JPG" width="500"/>
+
