@@ -27,6 +27,12 @@ public class VoxelizerUtil
     {
         texture.filterMode = FilterMode.Point;
 
+        var textureFormat = texture.format;
+        if (textureFormat != TextureFormat.RGBA32)
+        {
+            Debug.LogWarning("For best results, set sprite format to RGBA32 from Import Settings");
+        }
+
         int height = texture.height;
         int width = texture.width;
         Color32[] colorBuffer = texture.GetPixels32();
