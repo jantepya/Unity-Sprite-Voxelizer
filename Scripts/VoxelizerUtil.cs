@@ -29,18 +29,18 @@ public class VoxelizerUtil
         int width = texture.width;
         Color32[] colorBuffer = texture.GetPixels32();
 
-        Mesh mesh = new Mesh();
+        var mesh = new Mesh();
 
-        List<Vector3> vertices = GenerateVertices(height, width);
+        var vertices = GenerateVertices(height, width);
         mesh.SetVertices(vertices);
 
-        List<Vector3> normals = GenerateNormals(height, width);
+        var normals = GenerateNormals(height, width);
         mesh.SetNormals(normals);
 
-        List<Color32> vertexColors = GenerateColors(colorBuffer, height, width);
+        var vertexColors = GenerateColors(colorBuffer, height, width);
         mesh.SetColors(vertexColors);
 
-        int[] triangles = GenerateTriangles(colorBuffer, width);
+        var triangles = GenerateTriangles(colorBuffer, width);
         mesh.SetTriangles(triangles, 0);
 
         mesh.Optimize();
@@ -169,7 +169,7 @@ public class VoxelizerUtil
 
     private static List<Color32> GenerateColors(Color32[] colorBuffer, int height, int width)
     {
-        List<Color32> vertexColors = new List<Color32>();
+        List<Color32> vertexColors = new List<Color32>(24 * (height * width));
         for (int i = 0; i < height; i++)
         {
             for (int j = 0; j < width; j++)

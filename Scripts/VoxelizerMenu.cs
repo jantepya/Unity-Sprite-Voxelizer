@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class VoxilizerMenu : EditorWindow
 {
-    [MenuItem("Window/Voxelizer")]
+    [MenuItem("Window/Voxelize Sprite")]
 
     public static void ShowWindow()
     {
