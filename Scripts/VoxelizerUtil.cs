@@ -25,6 +25,8 @@ public class VoxelizerUtil
      */
     public static Mesh VoxelizeTexture2D(Texture2D texture)
     {
+        texture.filterMode = FilterMode.Point;
+
         int height = texture.height;
         int width = texture.width;
         Color32[] colorBuffer = texture.GetPixels32();
