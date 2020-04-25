@@ -12,7 +12,6 @@ public class VoxelizerUtil
 
         var sprite3D = new GameObject(sprite.name + " 3D");
         
-
         var meshFilter = sprite3D.AddComponent<MeshFilter>();
         meshFilter.sharedMesh = mesh;
 
@@ -50,8 +49,6 @@ public class VoxelizerUtil
 
         var triangles = GenerateTriangles(colorBuffer, width);
         mesh.SetTriangles(triangles, 0);
-
-        mesh.Optimize();
 
         return mesh;
     }
@@ -102,14 +99,14 @@ public class VoxelizerUtil
         return vertices;
     }
 
-    private static int[] GenerateTriangles(Color32[] colorBuffer, int width)
+    private static int[] GenerateTriangles(IList<Color32> colorBuffer, int width)
     {
         // triangle values are indices of vertices array
-        List<int> triangles = new List<int>();
+        List<int> triangles = new List<int>(colorBuffer.Count);
 
         // colorbuffer pixels are laid out left to right, 
         // bottom to top (i.e. row after row)
-        for (int i = 0; i < 24*colorBuffer.Length; i+=24)
+        for (int i = 0; i < 24*colorBuffer.Count; i+=24)
         {
             if (colorBuffer[i/24].a != 0)
             {
@@ -175,7 +172,7 @@ public class VoxelizerUtil
         return normals;
     }
 
-    private static List<Color32> GenerateColors(Color32[] colorBuffer, int height, int width)
+    private static List<Color32> GenerateColors(IList<Color32> colorBuffer, int height, int width)
     {
         List<Color32> vertexColors = new List<Color32>(24 * (height * width));
         for (int i = 0; i < height; i++)

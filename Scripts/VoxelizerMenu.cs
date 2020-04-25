@@ -1,8 +1,6 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-
-
 public class VoxilizerMenu : EditorWindow
 {
     [MenuItem("Window/Voxelize Sprite")]
