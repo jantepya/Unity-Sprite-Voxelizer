@@ -45,11 +45,11 @@ namespace Voxelizer
         */
         private static List<Vector3> GenerateVertices(int height, int width)
         {
-            List<Vector3> vertices = new List<Vector3>(24*(height * width));
+            List<Vector3> vertices = new List<Vector3>(24 * (height * width));
 
             float scale = 1f;
 
-            for (int i = height-1; i >= 0 ; i--)
+            for (int i = height - 1; i >= 0; i--)
             {
                 float y = -i * scale;
                 for (int j = 0; j < width; j++)
@@ -78,7 +78,7 @@ namespace Voxelizer
                         cube[6], cube[7], cube[3], cube[2], // Back
                         cube[5], cube[6], cube[2], cube[1], // Right
                         cube[7], cube[6], cube[5], cube[4]  // Top
-                    });  
+                    });
                 }
             }
 
@@ -92,9 +92,9 @@ namespace Voxelizer
 
             // colorbuffer pixels are laid out left to right, 
             // bottom to top (i.e. row after row)
-            for (int i = 0; i < 24*colorBuffer.Count; i+=24)
+            for (int i = 0; i < 24 * colorBuffer.Count; i += 24)
             {
-                if (colorBuffer[i/24].a != 0)
+                if (colorBuffer[i / 24].a != 0)
                 {
                     triangles.AddRange(new int[]
                     {
@@ -124,13 +124,13 @@ namespace Voxelizer
                     });
                 }
             }
-            
+
             return triangles.ToArray();
         }
 
         private static List<Vector3> GenerateNormals(int height, int width)
         {
-            List<Vector3> normals = new List<Vector3>(24*height*width);
+            List<Vector3> normals = new List<Vector3>(24 * height * width);
 
             Vector3 up = Vector3.up;
             Vector3 down = Vector3.down;

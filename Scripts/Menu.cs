@@ -37,7 +37,7 @@ namespace Voxelizer
                     debugText = "Read/Write needs to be enabled in the sprite's Import Settings";
                 }
                 else if (_sprite.texture.format != TextureFormat.RGBA32)
-                {   
+                {
                     debugText = "For best results, set sprite compression format to RGBA32 before converting";
                 }
             }
@@ -86,12 +86,12 @@ namespace Voxelizer
             Debug.Log($"[VoxelizeSprite] {meshName}: Mesh created after {timer.ElapsedMilliseconds} milliseconds");
 
             var sprite3D = new GameObject(sprite.name + "_3D");
-            
+
             var meshFilter = sprite3D.AddComponent<MeshFilter>();
             meshFilter.sharedMesh = mesh;
 
             var meshRenderer = sprite3D.AddComponent<MeshRenderer>();
             meshRenderer.material = material == null ? Resources.Load<Material>("Materials/3DSpriteMaterial") : material;
-        } 
+        }
     }
 }
