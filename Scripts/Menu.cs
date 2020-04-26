@@ -42,13 +42,13 @@ namespace Voxelizer
                 }
             }
 
-            _material = (Material)EditorGUILayout.ObjectField("Selected Sprite", _material, typeof(Material), true);
+            _material = (Material)EditorGUILayout.ObjectField("Rendering material", _material, typeof(Material), true);
             EditorGUILayout.Space();
 
 
             GUILayout.BeginVertical("HelpBox");
             _useMeshOptimizer = EditorGUILayout.Toggle("Use Mesh Optimizer", _useMeshOptimizer);
-            EditorGUILayout.HelpBox("Unity's mesh optimizer optimezes the Mesh data to improve rendering performance. This operation can take a few seconds or more for complex meshes", MessageType.Info);
+            EditorGUILayout.HelpBox("Unity's mesh optimizer optimizes the Mesh data to improve rendering performance. This operation can take a few seconds or more for complex meshes", MessageType.Info);
             GUILayout.EndVertical();
             EditorGUILayout.Space();
 
@@ -66,7 +66,7 @@ namespace Voxelizer
         }
 
         /*
-        * Create a 3D voxel GameObject from a texture
+        * Create a 3D voxel GameObject from a sprite
         */
         public static void VoxelizeSprite(Sprite sprite, Material material, bool useMeshOptimizer = false)
         {
@@ -83,7 +83,7 @@ namespace Voxelizer
 
             string meshName = sprite.name + "_3D";
 
-            Debug.Log($"[VoxelizeSprite] {meshName}: Mesh created after {timer.ElapsedMilliseconds} milliseconds");
+            Debug.Log(string.Format("[Voxelizer] {0}: Mesh created after {1} milliseconds", meshName, timer.ElapsedMilliseconds));
 
             var sprite3D = new GameObject(sprite.name + "_3D");
 
