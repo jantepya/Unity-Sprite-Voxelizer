@@ -2,23 +2,24 @@
 using UnityEngine;
 using Stopwatch = System.Diagnostics.Stopwatch;
 
+#if UNITY_EDITOR
 namespace Voxelizer
 {
-    public class Menu : EditorWindow
+    public class VoxelMenu : EditorWindow
     {
         [MenuItem("Window/Voxelize Sprite")]
-
-        public static void ShowWindow()
+        public static void ShowWindow ()
         {
-            EditorWindow.GetWindow(typeof(Voxelizer.Menu));
+            EditorWindow.GetWindow<VoxelMenu>("Voxelizer Menu");
         }
 
         private Sprite _sprite;
         private Material _material;
-        private Shader _shader;
         private bool _useMeshOptimizer;
+        private bool _saveMesh;
+        private bool _createNewGameObject = true;
 
-        void OnGUI()
+        private void OnGUI()
         {
             _sprite = (Sprite)EditorGUILayout.ObjectField("Selected Sprite", _sprite, typeof(Sprite), true);
 
@@ -53,9 +54,14 @@ namespace Voxelizer
             EditorGUILayout.Space();
 
 
+            _saveMesh = EditorGUILayout.Toggle("Save Mesh To File", _saveMesh);
+            _createNewGameObject = EditorGUILayout.Toggle("Add Mesh to scene", _createNewGameObject);
+            EditorGUILayout.Space();
+
+
             if (GUILayout.Button("Create"))
             {
-                VoxelizeSprite(_sprite, _material, _useMeshOptimizer);
+                VoxelizeSprite();
             }
             GUI.enabled = true;
 
@@ -65,33 +71,57 @@ namespace Voxelizer
             }
         }
 
-        /*
-        * Create a 3D voxel GameObject from a sprite
-        */
-        public static void VoxelizeSprite(Sprite sprite, Material material, bool useMeshOptimizer = false)
+        private void VoxelizeSprite()
         {
             var timer = Stopwatch.StartNew();
 
-            Mesh mesh = Voxelizer.Util.VoxelizeTexture2D(sprite.texture);
+            Mesh mesh = Voxelizer.Util.VoxelizeTexture2D(_sprite.texture);
 
-            if (useMeshOptimizer)
+            if (_useMeshOptimizer)
             {
                 MeshUtility.Optimize(mesh);
             }
 
             timer.Stop();
 
-            string meshName = sprite.name + "_3D";
-
+            string meshName = _sprite.name + "_3D";
+            mesh.name = meshName;
             Debug.Log(string.Format("[Voxelizer] {0}: Mesh created after {1} milliseconds", meshName, timer.ElapsedMilliseconds));
 
-            var sprite3D = new GameObject(sprite.name + "_3D");
+            if (_saveMesh)
+            {
+                SaveMeshToFile(mesh);
+            }
+
+            if (_createNewGameObject)
+            {
+                CreateVoxelGameObject(mesh);
+            }
+        }
+
+        private void CreateVoxelGameObject(Mesh mesh)
+        {
+            var sprite3D = new GameObject(_sprite.name + "_3D");
 
             var meshFilter = sprite3D.AddComponent<MeshFilter>();
             meshFilter.sharedMesh = mesh;
 
             var meshRenderer = sprite3D.AddComponent<MeshRenderer>();
-            meshRenderer.material = material == null ? Resources.Load<Material>("Materials/3DSpriteMaterial") : material;
+            meshRenderer.material = _material == null ? Resources.Load<Material>("Materials/3DSpriteMaterial") : _material;
+        }
+
+        private void SaveMeshToFile(Mesh mesh)
+        {
+            string path = EditorUtility.SaveFilePanel("Save textures to folder", "Assets/", mesh.name, "obj");
+
+            path = FileUtil.GetProjectRelativePath(path);
+
+            if (string.IsNullOrEmpty(path) == false)
+            {
+                AssetDatabase.CreateAsset(mesh, path);
+                AssetDatabase.SaveAssets();
+            }
         }
     }
 }
+#endif

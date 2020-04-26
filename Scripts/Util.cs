@@ -10,7 +10,6 @@ namespace Voxelizer
         */
         public static Mesh VoxelizeTexture2D(Texture2D texture)
         {
-            texture.Apply(updateMipmaps: true, makeNoLongerReadable: false);
             texture.filterMode = FilterMode.Point;
 
             if (texture.format != TextureFormat.RGBA32)
@@ -175,6 +174,5 @@ namespace Voxelizer
 
             return vertexColors;
         }
-
     }
 }
