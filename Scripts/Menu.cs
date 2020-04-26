@@ -112,7 +112,7 @@ namespace Voxelizer
 
         private void SaveMeshToFile(Mesh mesh)
         {
-            string path = EditorUtility.SaveFilePanel("Save textures to folder", "Assets/", mesh.name, "asset");
+            string path = EditorUtility.SaveFilePanel("Save mesh to folder", "Assets/", mesh.name, "asset");
 
             path = FileUtil.GetProjectRelativePath(path);
 
@@ -120,6 +120,10 @@ namespace Voxelizer
             {
                 AssetDatabase.CreateAsset(mesh, path);
                 AssetDatabase.SaveAssets();
+            }
+            else
+            {
+                Debug.LogWarning("[Voxelizer] Export failed: No path selected");
             }
         }
     }
