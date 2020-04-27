@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Voxelizer
 {
-    public static class Util
+    public static class VoxelUtil
     {
         /*
         * Create a Mesh object from a Texture2D object

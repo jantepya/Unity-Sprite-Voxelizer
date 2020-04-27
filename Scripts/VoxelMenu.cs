@@ -100,7 +100,7 @@ namespace Voxelizer
         {
             var timer = Stopwatch.StartNew();
 
-            Mesh mesh = Voxelizer.Util.VoxelizeTexture2D(_sprite.texture);
+            Mesh mesh = VoxelUtil.VoxelizeTexture2D(_sprite.texture);
 
             if (_useMeshOptimizer)
             {
