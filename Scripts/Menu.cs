@@ -13,9 +13,17 @@ namespace Voxelizer
             EditorWindow.GetWindow<VoxelMenu>("Voxelizer Menu");
         }
 
+        private enum MaterialType
+        {
+            Standard,
+            Specular,
+            Custom
+        }
+
         private Sprite _sprite;
+        private MaterialType _materialType;
         private Material _material;
-        private bool _useMeshOptimizer;
+        private bool _useMeshOptimizer = true;
         private bool _saveMesh;
         private bool _createNewGameObject = true;
 
@@ -28,7 +36,7 @@ namespace Voxelizer
             if (_sprite == null)
             {
                 GUI.enabled = false;
-                debugText = "Need to Select a Sprite";
+                debugText = "Need to Select a Sprite!";
             }
             else
             {
@@ -43,7 +51,13 @@ namespace Voxelizer
                 }
             }
 
-            _material = (Material)EditorGUILayout.ObjectField("Rendering material", _material, typeof(Material), true);
+            _materialType = (MaterialType)EditorGUILayout.EnumPopup("Material type:", _materialType);
+
+            if (_materialType == MaterialType.Custom)
+            {
+                _material = (Material)EditorGUILayout.ObjectField("Rendering material", _material, typeof(Material), true);
+            }
+
             EditorGUILayout.Space();
 
 
@@ -58,6 +72,17 @@ namespace Voxelizer
             _createNewGameObject = EditorGUILayout.Toggle("Add Mesh to scene", _createNewGameObject);
             EditorGUILayout.Space();
 
+
+            if (_materialType == MaterialType.Custom && _material == null && _createNewGameObject == true)
+            {
+                GUI.enabled = false;
+                debugText = "Please select a material for creating a GameObject!";
+            }
+
+            if (_createNewGameObject == false && _saveMesh == false)
+            {
+                GUI.enabled = false;
+            }
 
             if (GUILayout.Button("Create"))
             {
@@ -107,7 +132,20 @@ namespace Voxelizer
             meshFilter.sharedMesh = mesh;
 
             var meshRenderer = sprite3D.AddComponent<MeshRenderer>();
-            meshRenderer.material = _material == null ? Resources.Load<Material>("Materials/3DSpriteMaterial") : _material;
+
+            switch(_materialType)
+            {
+                case MaterialType.Standard:
+                    _material = Resources.Load<Material>("Materials/Standard");
+                    break;
+                case MaterialType.Specular:
+                    _material = Resources.Load<Material>("Materials/StandardSpecular");
+                    break;
+                default:
+                    break;
+            }
+
+            meshRenderer.material = _material == null ? Resources.Load<Material>("Materials/Standard") : _material;
         }
 
         private void SaveMeshToFile(Mesh mesh)

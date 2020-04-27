@@ -1,6 +1,6 @@
-﻿// Unity built-in shader source. Copyright (c) 2016 Unity Technologies. MIT license (see license.txt)
-
-Shader "Standard"
+// Unity Standard Vertex Color Shader for Unity 2017.1.1f1
+// (original by defaxer)
+Shader "Standard (Vertex Color)"
 {
     Properties
     {
@@ -20,7 +20,7 @@ Shader "Standard"
         [ToggleOff] _GlossyReflections("Glossy Reflections", Float) = 1.0
 
         _BumpScale("Scale", Float) = 1.0
-        [Normal] _BumpMap("Normal Map", 2D) = "bump" {}
+        _BumpMap("Normal Map", 2D) = "bump" {}
 
         _Parallax ("Height Scale", Range (0.005, 0.08)) = 0.02
         _ParallaxMap ("Height Map", 2D) = "black" {}
@@ -35,7 +35,7 @@ Shader "Standard"
 
         _DetailAlbedoMap("Detail Albedo x2", 2D) = "grey" {}
         _DetailNormalMapScale("Scale", Float) = 1.0
-        [Normal] _DetailNormalMap("Normal Map", 2D) = "bump" {}
+        _DetailNormalMap("Normal Map", 2D) = "bump" {}
 
         [Enum(UV0,0,UV1,1)] _UVSec ("UV Set for secondary textures", Float) = 0
 
@@ -45,6 +45,8 @@ Shader "Standard"
         [HideInInspector] _SrcBlend ("__src", Float) = 1.0
         [HideInInspector] _DstBlend ("__dst", Float) = 0.0
         [HideInInspector] _ZWrite ("__zw", Float) = 1.0
+
+        _IntensityVC("Vertex Color Intencity", Float) = 1.0
     }
 
     CGINCLUDE
@@ -72,15 +74,16 @@ Shader "Standard"
 
             // -------------------------------------
 
-            #pragma shader_feature_local _NORMALMAP
-            #pragma shader_feature_local _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
+            #pragma shader_feature _NORMALMAP
+            #pragma shader_feature _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
             #pragma shader_feature _EMISSION
-            #pragma shader_feature_local _METALLICGLOSSMAP
-            #pragma shader_feature_local _DETAIL_MULX2
-            #pragma shader_feature_local _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
-            #pragma shader_feature_local _SPECULARHIGHLIGHTS_OFF
-            #pragma shader_feature_local _GLOSSYREFLECTIONS_OFF
-            #pragma shader_feature_local _PARALLAXMAP
+            #pragma shader_feature _METALLICGLOSSMAP
+            #pragma shader_feature ___ _DETAIL_MULX2
+            #pragma shader_feature _ _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            #pragma shader_feature _ _SPECULARHIGHLIGHTS_OFF
+            #pragma shader_feature _ _GLOSSYREFLECTIONS_OFF
+            #pragma shader_feature _PARALLAXMAP
+			#pragma shader_feature _VERTEXCOLOR_OFF _VERTEXCOLOR _VERTEXCOLOR_LERP
 
             #pragma multi_compile_fwdbase
             #pragma multi_compile_fog
@@ -88,9 +91,11 @@ Shader "Standard"
             // Uncomment the following line to enable dithering LOD crossfade. Note: there are more in the file to uncomment for other passes.
             //#pragma multi_compile _ LOD_FADE_CROSSFADE
 
-            #pragma vertex vertBase
-            #pragma fragment fragBase
+			#pragma vertex vertForwardBase_VC
+			#pragma fragment fragForwardBase_VC
+
             #include "UnityStandardCoreForward.cginc"
+            #include "UnityVC.cginc"
 
             ENDCG
         }
@@ -111,22 +116,25 @@ Shader "Standard"
             // -------------------------------------
 
 
-            #pragma shader_feature_local _NORMALMAP
-            #pragma shader_feature_local _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
-            #pragma shader_feature_local _METALLICGLOSSMAP
-            #pragma shader_feature_local _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
-            #pragma shader_feature_local _SPECULARHIGHLIGHTS_OFF
-            #pragma shader_feature_local _DETAIL_MULX2
-            #pragma shader_feature_local _PARALLAXMAP
+            #pragma shader_feature _NORMALMAP
+            #pragma shader_feature _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
+            #pragma shader_feature _METALLICGLOSSMAP
+            #pragma shader_feature _ _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            #pragma shader_feature _ _SPECULARHIGHLIGHTS_OFF
+            #pragma shader_feature ___ _DETAIL_MULX2
+            #pragma shader_feature _PARALLAXMAP
+            #pragma shader_feature _VERTEXCOLOR
 
             #pragma multi_compile_fwdadd_fullshadows
             #pragma multi_compile_fog
             // Uncomment the following line to enable dithering LOD crossfade. Note: there are more in the file to uncomment for other passes.
             //#pragma multi_compile _ LOD_FADE_CROSSFADE
 
-            #pragma vertex vertAdd
-            #pragma fragment fragAdd
-            #include "UnityStandardCoreForward.cginc"
+            #pragma vertex vertForwardAdd_VC
+			#pragma fragment fragForwardAdd_VC
+
+			#include "UnityStandardCoreForward.cginc"
+			#include "UnityVC.cginc"
 
             ENDCG
         }
@@ -143,20 +151,21 @@ Shader "Standard"
 
             // -------------------------------------
 
-
-            #pragma shader_feature_local _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
-            #pragma shader_feature_local _METALLICGLOSSMAP
-            #pragma shader_feature_local _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
-            #pragma shader_feature_local _PARALLAXMAP
+            #pragma shader_feature _VERTEXCOLOR
+			#pragma shader_feature _VERTEXCOLOR_LERP
+            #pragma shader_feature _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
+            #pragma shader_feature _METALLICGLOSSMAP
+            #pragma shader_feature _PARALLAXMAP
             #pragma multi_compile_shadowcaster
             #pragma multi_compile_instancing
             // Uncomment the following line to enable dithering LOD crossfade. Note: there are more in the file to uncomment for other passes.
             //#pragma multi_compile _ LOD_FADE_CROSSFADE
 
-            #pragma vertex vertShadowCaster
-            #pragma fragment fragShadowCaster
+            #pragma vertex vertShadowCaster_VC
+			#pragma fragment fragShadowCaster_VC
 
-            #include "UnityStandardShadow.cginc"
+			#include "UnityStandardShadow.cginc"
+			#include "UnityVCShadow.cginc"
 
             ENDCG
         }
@@ -174,24 +183,26 @@ Shader "Standard"
 
             // -------------------------------------
 
-            #pragma shader_feature_local _NORMALMAP
-            #pragma shader_feature_local _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
+            #pragma shader_feature _NORMALMAP
+            #pragma shader_feature _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
             #pragma shader_feature _EMISSION
-            #pragma shader_feature_local _METALLICGLOSSMAP
-            #pragma shader_feature_local _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
-            #pragma shader_feature_local _SPECULARHIGHLIGHTS_OFF
-            #pragma shader_feature_local _DETAIL_MULX2
-            #pragma shader_feature_local _PARALLAXMAP
+            #pragma shader_feature _METALLICGLOSSMAP
+            #pragma shader_feature _ _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            #pragma shader_feature _ _SPECULARHIGHLIGHTS_OFF
+            #pragma shader_feature ___ _DETAIL_MULX2
+            #pragma shader_feature _PARALLAXMAP
+            #pragma shader_feature _VERTEXCOLOR_OFF _VERTEXCOLOR _VERTEXCOLOR_LERP
 
             #pragma multi_compile_prepassfinal
             #pragma multi_compile_instancing
             // Uncomment the following line to enable dithering LOD crossfade. Note: there are more in the file to uncomment for other passes.
             //#pragma multi_compile _ LOD_FADE_CROSSFADE
 
-            #pragma vertex vertDeferred
-            #pragma fragment fragDeferred
+            #pragma vertex vertDeferred_VC
+			#pragma fragment fragDeferred_VC
 
-            #include "UnityStandardCore.cginc"
+			#include "UnityStandardCore.cginc"
+			#include "UnityVC.cginc"
 
             ENDCG
         }
@@ -211,9 +222,9 @@ Shader "Standard"
             #pragma fragment frag_meta
 
             #pragma shader_feature _EMISSION
-            #pragma shader_feature_local _METALLICGLOSSMAP
-            #pragma shader_feature_local _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
-            #pragma shader_feature_local _DETAIL_MULX2
+            #pragma shader_feature _METALLICGLOSSMAP
+            #pragma shader_feature _ _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            #pragma shader_feature ___ _DETAIL_MULX2
             #pragma shader_feature EDITOR_VISUALIZATION
 
             #include "UnityStandardMeta.cginc"
@@ -239,24 +250,27 @@ Shader "Standard"
             CGPROGRAM
             #pragma target 2.0
 
-            #pragma shader_feature_local _NORMALMAP
-            #pragma shader_feature_local _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
+            #pragma shader_feature _NORMALMAP
+            #pragma shader_feature _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
             #pragma shader_feature _EMISSION
-            #pragma shader_feature_local _METALLICGLOSSMAP
-            #pragma shader_feature_local _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
-            #pragma shader_feature_local _SPECULARHIGHLIGHTS_OFF
-            #pragma shader_feature_local _GLOSSYREFLECTIONS_OFF
-            // SM2.0: NOT SUPPORTED shader_feature_local _DETAIL_MULX2
-            // SM2.0: NOT SUPPORTED shader_feature_local _PARALLAXMAP
+            #pragma shader_feature _METALLICGLOSSMAP
+            #pragma shader_feature _ _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            #pragma shader_feature _ _SPECULARHIGHLIGHTS_OFF
+            #pragma shader_feature _ _GLOSSYREFLECTIONS_OFF
+            #pragma shader_feature _VERTEXCOLOR_OFF _VERTEXCOLOR _VERTEXCOLOR_LERP
+            // SM2.0: NOT SUPPORTED shader_feature ___ _DETAIL_MULX2
+            // SM2.0: NOT SUPPORTED shader_feature _PARALLAXMAP
 
             #pragma skip_variants SHADOWS_SOFT DIRLIGHTMAP_COMBINED
 
             #pragma multi_compile_fwdbase
             #pragma multi_compile_fog
 
-            #pragma vertex vertBase
-            #pragma fragment fragBase
-            #include "UnityStandardCoreForward.cginc"
+            #pragma vertex vertForwardBase_VC
+			#pragma fragment fragForwardBase_VC
+
+			#include "UnityStandardCoreForward.cginc"
+			#include "UnityVC.cginc"
 
             ENDCG
         }
@@ -274,21 +288,24 @@ Shader "Standard"
             CGPROGRAM
             #pragma target 2.0
 
-            #pragma shader_feature_local _NORMALMAP
-            #pragma shader_feature_local _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
-            #pragma shader_feature_local _METALLICGLOSSMAP
-            #pragma shader_feature_local _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
-            #pragma shader_feature_local _SPECULARHIGHLIGHTS_OFF
-            #pragma shader_feature_local _DETAIL_MULX2
-            // SM2.0: NOT SUPPORTED shader_feature_local _PARALLAXMAP
+            #pragma shader_feature _NORMALMAP
+            #pragma shader_feature _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
+            #pragma shader_feature _METALLICGLOSSMAP
+            #pragma shader_feature _ _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            #pragma shader_feature _ _SPECULARHIGHLIGHTS_OFF
+            #pragma shader_feature ___ _DETAIL_MULX2
+            // SM2.0: NOT SUPPORTED shader_feature _PARALLAXMAP
             #pragma skip_variants SHADOWS_SOFT
+            #pragma shader_feature _VERTEXCOLOR
 
             #pragma multi_compile_fwdadd_fullshadows
             #pragma multi_compile_fog
 
-            #pragma vertex vertAdd
-            #pragma fragment fragAdd
-            #include "UnityStandardCoreForward.cginc"
+            #pragma vertex vertForwardAdd_VC
+			#pragma fragment fragForwardAdd_VC
+
+			#include "UnityStandardCoreForward.cginc"
+			#include "UnityVC.cginc"
 
             ENDCG
         }
@@ -303,16 +320,18 @@ Shader "Standard"
             CGPROGRAM
             #pragma target 2.0
 
-            #pragma shader_feature_local _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
-            #pragma shader_feature_local _METALLICGLOSSMAP
-            #pragma shader_feature_local _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            #pragma shader_feature _VERTEXCOLOR
+			#pragma shader_feature _VERTEXCOLOR_LERP
+            #pragma shader_feature _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
+            #pragma shader_feature _METALLICGLOSSMAP
             #pragma skip_variants SHADOWS_SOFT
             #pragma multi_compile_shadowcaster
 
-            #pragma vertex vertShadowCaster
-            #pragma fragment fragShadowCaster
+            #pragma vertex vertShadowCaster_VC
+			#pragma fragment fragShadowCaster_VC
 
-            #include "UnityStandardShadow.cginc"
+			#include "UnityStandardShadow.cginc"
+			#include "UnityVCShadow.cginc"
 
             ENDCG
         }
@@ -332,9 +351,9 @@ Shader "Standard"
             #pragma fragment frag_meta
 
             #pragma shader_feature _EMISSION
-            #pragma shader_feature_local _METALLICGLOSSMAP
-            #pragma shader_feature_local _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
-            #pragma shader_feature_local _DETAIL_MULX2
+            #pragma shader_feature _METALLICGLOSSMAP
+            #pragma shader_feature _ _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            #pragma shader_feature ___ _DETAIL_MULX2
             #pragma shader_feature EDITOR_VISUALIZATION
 
             #include "UnityStandardMeta.cginc"
@@ -344,5 +363,5 @@ Shader "Standard"
 
 
     FallBack "VertexLit"
-    CustomEditor "StandardShaderGUI"
+    CustomEditor "StandardShaderVCGUI"
 }
