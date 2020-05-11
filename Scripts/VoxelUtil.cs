@@ -1,10 +1,13 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 namespace Voxelizer
 {
     public static class VoxelUtil
     {
+        private const int CUBE_INDICES_COUNT = 24;
+
         /*
         * Create a Mesh object from a Texture2D object
         */
@@ -22,6 +25,11 @@ namespace Voxelizer
             Color32[] colorBuffer = texture.GetPixels32();
 
             var mesh = new Mesh();
+
+            if (CUBE_INDICES_COUNT * height * width >= Int16.MaxValue)
+            {
+                mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+            }
 
             var vertices = GenerateVertices(height, width);
             mesh.SetVertices(vertices);
@@ -44,7 +52,7 @@ namespace Voxelizer
         */
         private static List<Vector3> GenerateVertices(int height, int width)
         {
-            List<Vector3> vertices = new List<Vector3>(24 * (height * width));
+            List<Vector3> vertices = new List<Vector3>(CUBE_INDICES_COUNT * height * width);
 
             float scale = 1f;
 
@@ -84,16 +92,16 @@ namespace Voxelizer
             return vertices;
         }
 
-        private static int[] GenerateTriangles(IList<Color32> colorBuffer, int width)
+        private static List<int> GenerateTriangles(IList<Color32> colorBuffer, int width)
         {
             // triangle values are indices of vertices array
-            List<int> triangles = new List<int>(colorBuffer.Count);
+            List<int> triangles = new List<int>();
 
             // colorbuffer pixels are laid out left to right, 
             // bottom to top (i.e. row after row)
-            for (int i = 0; i < 24 * colorBuffer.Count; i += 24)
+            for (int i = 0; i < CUBE_INDICES_COUNT * colorBuffer.Count; i += CUBE_INDICES_COUNT)
             {
-                if (colorBuffer[i / 24].a != 0)
+                if (colorBuffer[i / CUBE_INDICES_COUNT].a != 0)
                 {
                     triangles.AddRange(new int[]
                     {
@@ -124,12 +132,12 @@ namespace Voxelizer
                 }
             }
 
-            return triangles.ToArray();
+            return triangles;
         }
 
         private static List<Vector3> GenerateNormals(int height, int width)
         {
-            List<Vector3> normals = new List<Vector3>(24 * height * width);
+            List<Vector3> normals = new List<Vector3>(CUBE_INDICES_COUNT * height * width);
 
             Vector3 up = Vector3.up;
             Vector3 down = Vector3.down;
@@ -159,13 +167,13 @@ namespace Voxelizer
 
         private static List<Color32> GenerateColors(IList<Color32> colorBuffer, int height, int width)
         {
-            List<Color32> vertexColors = new List<Color32>(24 * height * width);
+            List<Color32> vertexColors = new List<Color32>(CUBE_INDICES_COUNT * colorBuffer.Count);
             for (int i = 0; i < height; i++)
             {
                 for (int j = 0; j < width; j++)
                 {
                     Color32 c = colorBuffer[j + i * width];
-                    for (int k = 0; k < 24; k++)
+                    for (int k = 0; k < CUBE_INDICES_COUNT; k++)
                     {
                         vertexColors.Add(c);
                     }

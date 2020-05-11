@@ -1,8 +1,8 @@
-﻿using UnityEditor;
+﻿#if UNITY_EDITOR
+using UnityEditor;
 using UnityEngine;
 using Stopwatch = System.Diagnostics.Stopwatch;
 
-#if UNITY_EDITOR
 namespace Voxelizer
 {
     public class VoxelMenu : EditorWindow
