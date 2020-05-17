@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using System;
+using System.Linq;
 
 namespace Voxelizer
 {
@@ -11,7 +12,7 @@ namespace Voxelizer
         /// <summary>
         /// Create a Mesh object from a Texture2D object
         /// </summary>
-        public static Mesh VoxelizeTexture2D(Texture2D texture)
+        public static Mesh VoxelizeTexture2D(Texture2D texture, bool applyColorPerVertex = false)
         {
             texture.filterMode = FilterMode.Point;
 
@@ -29,7 +30,11 @@ namespace Voxelizer
             GenerateVertices(ref mesh, colorBuffer, height, width);
             GenerateNormals(ref mesh);
             GenerateTriangles(ref mesh, colorBuffer);
-            GenerateColors(ref mesh, colorBuffer);
+
+            if (applyColorPerVertex)
+            {
+                GenerateVertexColors(ref mesh, colorBuffer);
+            }
 
             if (mesh.vertexCount >= Int16.MaxValue)
             {
@@ -46,17 +51,21 @@ namespace Voxelizer
         {
             if (mesh == null || colorBuffer == null) return;
             
-            List<Vector3> vertices = new List<Vector3>(CUBE_INDICES_COUNT * height * width);
+            var vertices = new List<Vector3>(CUBE_INDICES_COUNT * height * width);
+
+            float xStartPosition = -(width * scale / 2f);
+            float yStartPosition = -(height * scale / 2f);
 
             for (int i = 0; i < height; i++)
             {
-                float y = i * scale;
+                float y = yStartPosition + (i * scale);
+                
                 for (int j = 0; j < width; j++)
                 {
                     if (colorBuffer[i * width + j].a == 0)
                         continue;
                     
-                    float x = -j * scale;
+                    float x = xStartPosition + (j * scale);
 
                     Vector3[] cube = new Vector3[8];
 
@@ -91,14 +100,14 @@ namespace Voxelizer
         {
             if (mesh == null || mesh.vertexCount <= 0) return;
 
-            List<Vector3> normals = new List<Vector3>(mesh.vertexCount);
+            var normals = new List<Vector3>(mesh.vertexCount);
 
-            Vector3 up = Vector3.up;
-            Vector3 down = Vector3.down;
-            Vector3 forward = Vector3.forward;
-            Vector3 back = Vector3.back;
-            Vector3 left = Vector3.left;
-            Vector3 right = Vector3.right;
+            var up = Vector3.up;
+            var down = Vector3.down;
+            var forward = Vector3.forward;
+            var back = Vector3.back;
+            var left = Vector3.left;
+            var right = Vector3.right;
 
             for (int j = 0; j < mesh.vertexCount; j += CUBE_INDICES_COUNT)
             {
@@ -121,7 +130,7 @@ namespace Voxelizer
             if (mesh == null || colorBuffer == null) return;
             
             // triangle values are indices of vertices array
-            List<int> triangles = new List<int>( mesh.vertexCount);
+            var triangles = new List<int>( mesh.vertexCount);
 
             // colorbuffer pixels are laid out left to right, 
             // bottom to top (i.e. row after row)
@@ -163,9 +172,14 @@ namespace Voxelizer
             mesh.SetTriangles(triangles, 0);
         }
 
-        private static void GenerateColors(ref Mesh mesh, IList<Color32> colorBuffer)
+        /// <summary>
+        /// Assigns color for each vertex
+        /// </summary>
+        private static void GenerateVertexColors(ref Mesh mesh, IList<Color32> colorBuffer)
         {
-            List<Color32> vertexColors = new List<Color32>(CUBE_INDICES_COUNT * colorBuffer.Count);
+            if (mesh == null || colorBuffer == null) return;
+
+            var vertexColors = new List<Color32>(CUBE_INDICES_COUNT * colorBuffer.Count);
 
             for (int i = 0; i < colorBuffer.Count; i++)
             {
@@ -180,6 +194,67 @@ namespace Voxelizer
             }
 
             mesh.SetColors(vertexColors);
+        }
+
+
+        /// <summary>
+        /// Generates a Texture Map and assigns the mesh UVs accordingly
+        /// </summary>
+        public static Texture2D GenerateTextureMap(ref Mesh mesh, Texture2D inputTexture)
+        {
+            if (mesh == null || inputTexture == null) return null;
+
+            Color32[] colorBuffer = inputTexture.GetPixels32();
+            var colorMap = new Dictionary<Color32, int>();
+
+            for (int i = 0; i < colorBuffer.Length; i++)
+            {
+                Color32 color = colorBuffer[i];
+                
+                if (color.a != byte.MinValue && !colorMap.ContainsKey(color))
+                {
+                    colorMap.Add(color, colorMap.Count);
+                }
+            }
+
+            var size = colorMap.Count;
+            
+            var textureMap = new Texture2D(size, size);
+
+            if (size == 0) return textureMap;
+
+            foreach (var color in colorMap)
+            {
+                for (int i = 0; i < size; i++)
+                {
+                    textureMap.SetPixel(i, color.Value, color.Key);
+                }
+            }
+
+            var uvs = new List<Vector2>(mesh.vertexCount);
+            float offset = 1f / (2f * size);
+
+            for (int i = 0; i < colorBuffer.Length; i++)
+            {
+                Color32 color = colorBuffer[i];
+
+                if (color.a == byte.MinValue || !colorMap.ContainsKey(color)) continue;
+
+                int index = colorMap[color];
+                float v = (float) index / (float) size;
+
+                for (int k = 0; k < CUBE_INDICES_COUNT; k++)
+                {
+                    uvs.Add(new Vector2(0, v + offset));
+                }
+            }
+
+            mesh.SetUVs(0, uvs);
+
+            textureMap.filterMode = FilterMode.Point;
+            textureMap.Apply();
+            
+            return textureMap;
         }
     }
 }
