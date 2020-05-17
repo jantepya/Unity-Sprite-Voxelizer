@@ -8,9 +8,9 @@ namespace Voxelizer
     {
         private const int CUBE_INDICES_COUNT = 24;
 
-        /*
-        * Create a Mesh object from a Texture2D object
-        */
+        /// <summary>
+        /// Create a Mesh object from a Texture2D object
+        /// </summary>
         public static Mesh VoxelizeTexture2D(Texture2D texture)
         {
             texture.filterMode = FilterMode.Point;
@@ -26,42 +26,37 @@ namespace Voxelizer
 
             var mesh = new Mesh();
 
-            if (CUBE_INDICES_COUNT * height * width >= Int16.MaxValue)
+            GenerateVertices(ref mesh, colorBuffer, height, width);
+            GenerateNormals(ref mesh);
+            GenerateTriangles(ref mesh, colorBuffer);
+            GenerateColors(ref mesh, colorBuffer);
+
+            if (mesh.vertexCount >= Int16.MaxValue)
             {
                 mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
             }
 
-            var vertices = GenerateVertices(height, width);
-            mesh.SetVertices(vertices);
-
-            var normals = GenerateNormals(height, width);
-            mesh.SetNormals(normals);
-
-            var vertexColors = GenerateColors(colorBuffer, height, width);
-            mesh.SetColors(vertexColors);
-
-            var triangles = GenerateTriangles(colorBuffer, width);
-            mesh.SetTriangles(triangles, 0);
-
             return mesh;
         }
 
-
-        /*
-        * Generate 24 vertices cube for every pixel in the texture
-        */
-        private static List<Vector3> GenerateVertices(int height, int width)
+        /// <summary>
+        /// Generate 24 vertices cube for every pixel in the texture
+        /// </summary>
+        private static void GenerateVertices(ref Mesh mesh, IList<Color32> colorBuffer, int height, int width, float scale = 1.0f)
         {
+            if (mesh == null || colorBuffer == null) return;
+            
             List<Vector3> vertices = new List<Vector3>(CUBE_INDICES_COUNT * height * width);
 
-            float scale = 1f;
-
-            for (int i = height - 1; i >= 0; i--)
+            for (int i = 0; i < height; i++)
             {
-                float y = -i * scale;
+                float y = i * scale;
                 for (int j = 0; j < width; j++)
                 {
-                    float x = j * scale;
+                    if (colorBuffer[i * width + j].a == 0)
+                        continue;
+                    
+                    float x = -j * scale;
 
                     Vector3[] cube = new Vector3[8];
 
@@ -89,19 +84,51 @@ namespace Voxelizer
                 }
             }
 
-            return vertices;
+            mesh.SetVertices(vertices);
         }
 
-        private static List<int> GenerateTriangles(IList<Color32> colorBuffer, int width)
+        private static void GenerateNormals(ref Mesh mesh)
         {
+            if (mesh == null || mesh.vertexCount <= 0) return;
+
+            List<Vector3> normals = new List<Vector3>(mesh.vertexCount);
+
+            Vector3 up = Vector3.up;
+            Vector3 down = Vector3.down;
+            Vector3 forward = Vector3.forward;
+            Vector3 back = Vector3.back;
+            Vector3 left = Vector3.left;
+            Vector3 right = Vector3.right;
+
+            for (int j = 0; j < mesh.vertexCount; j += CUBE_INDICES_COUNT)
+            {
+                normals.AddRange(new List<Vector3>
+                {
+                    down, down, down, down,             // Bottom
+                    left, left, left, left,             // Left
+                    forward, forward, forward, forward,	// Front
+                    back, back, back, back,             // Back
+                    right, right, right, right,         // Right
+                    up, up, up, up	                    // Top
+                });
+            }
+            
+            mesh.SetNormals(normals);
+        }
+
+        private static void GenerateTriangles(ref Mesh mesh, IList<Color32> colorBuffer)
+        {
+            if (mesh == null || colorBuffer == null) return;
+            
             // triangle values are indices of vertices array
-            List<int> triangles = new List<int>();
+            List<int> triangles = new List<int>( mesh.vertexCount);
 
             // colorbuffer pixels are laid out left to right, 
             // bottom to top (i.e. row after row)
-            for (int i = 0; i < CUBE_INDICES_COUNT * colorBuffer.Count; i += CUBE_INDICES_COUNT)
+            int i = 0;
+            for (int j = 0; j < CUBE_INDICES_COUNT * colorBuffer.Count; j += CUBE_INDICES_COUNT)
             {
-                if (colorBuffer[i / CUBE_INDICES_COUNT].a != 0)
+                if (colorBuffer[j / CUBE_INDICES_COUNT].a != 0)
                 {
                     triangles.AddRange(new int[]
                     {
@@ -129,58 +156,30 @@ namespace Voxelizer
                         i + 23, i + 21, i + 20,
                         i + 23, i + 22, i + 21,
                     });
+                    i += CUBE_INDICES_COUNT;
                 }
             }
 
-            return triangles;
+            mesh.SetTriangles(triangles, 0);
         }
 
-        private static List<Vector3> GenerateNormals(int height, int width)
-        {
-            List<Vector3> normals = new List<Vector3>(CUBE_INDICES_COUNT * height * width);
-
-            Vector3 up = Vector3.up;
-            Vector3 down = Vector3.down;
-            Vector3 forward = Vector3.forward;
-            Vector3 back = Vector3.back;
-            Vector3 left = Vector3.left;
-            Vector3 right = Vector3.right;
-
-            for (int i = height - 1; i >= 0; i--)
-            {
-                for (int j = 0; j < width; j++)
-                {
-                    normals.AddRange(new List<Vector3>
-                    {
-                        down, down, down, down,             // Bottom
-                        left, left, left, left,             // Left
-                        forward, forward, forward, forward,	// Front
-                        back, back, back, back,             // Back
-                        right, right, right, right,         // Right
-                        up, up, up, up	                    // Top
-                    });
-                }
-            }
-
-            return normals;
-        }
-
-        private static List<Color32> GenerateColors(IList<Color32> colorBuffer, int height, int width)
+        private static void GenerateColors(ref Mesh mesh, IList<Color32> colorBuffer)
         {
             List<Color32> vertexColors = new List<Color32>(CUBE_INDICES_COUNT * colorBuffer.Count);
-            for (int i = 0; i < height; i++)
+
+            for (int i = 0; i < colorBuffer.Count; i++)
             {
-                for (int j = 0; j < width; j++)
+                Color32 color = colorBuffer[i];
+
+                if (color.a == 0) continue;
+
+                for (int k = 0; k < CUBE_INDICES_COUNT; k++)
                 {
-                    Color32 c = colorBuffer[j + i * width];
-                    for (int k = 0; k < CUBE_INDICES_COUNT; k++)
-                    {
-                        vertexColors.Add(c);
-                    }
+                    vertexColors.Add(color);
                 }
             }
 
-            return vertexColors;
+            mesh.SetColors(vertexColors);
         }
     }
 }

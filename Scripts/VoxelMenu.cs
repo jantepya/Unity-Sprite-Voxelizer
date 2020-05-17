@@ -136,16 +136,16 @@ namespace Voxelizer
             switch(_materialType)
             {
                 case MaterialType.Standard:
-                    _material = Resources.Load<Material>("Materials/Standard");
+                    _material = Resources.Load<Material>("Materials/VCStandard");
                     break;
                 case MaterialType.Specular:
-                    _material = Resources.Load<Material>("Materials/StandardSpecular");
+                    _material = Resources.Load<Material>("Materials/VCStandardSpecular");
                     break;
                 default:
                     break;
             }
 
-            meshRenderer.material = _material == null ? Resources.Load<Material>("Materials/Standard") : _material;
+            meshRenderer.sharedMaterial = _material == null ? Resources.Load<Material>("Materials/VCStandard") : _material;
         }
 
         private void SaveMeshToFile(Mesh mesh)
