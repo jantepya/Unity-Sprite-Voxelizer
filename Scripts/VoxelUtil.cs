@@ -12,7 +12,7 @@ namespace Voxelizer
         /// <summary>
         /// Create a Mesh object from a Texture2D object
         /// </summary>
-        public static Mesh VoxelizeTexture2D(Texture2D texture, bool applyColorPerVertex = false)
+        public static Mesh VoxelizeTexture2D(Texture2D texture, bool applyColorPerVertex = false, float scale = 1.0f)
         {
             texture.filterMode = FilterMode.Point;
 
@@ -27,7 +27,7 @@ namespace Voxelizer
 
             var mesh = new Mesh();
 
-            GenerateVertices(ref mesh, colorBuffer, height, width);
+            GenerateVertices(ref mesh, colorBuffer, height, width, scale);
             GenerateNormals(ref mesh);
             GenerateTriangles(ref mesh, colorBuffer);
 

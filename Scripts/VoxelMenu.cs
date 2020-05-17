@@ -16,6 +16,7 @@ namespace Voxelizer
         }
 
         private Sprite _sprite;
+        private float _scale = 1.0f;
         private bool _useMeshOptimizer = true;
         private bool _saveMesh;
         private bool _saveTexture;
@@ -47,6 +48,8 @@ namespace Voxelizer
             }
 
             EditorGUILayout.Space();
+
+            _scale = (float)EditorGUILayout.FloatField("Scale", _scale);
 
             GUILayout.BeginVertical("HelpBox");
             _useMeshOptimizer = EditorGUILayout.Toggle("Use Mesh Optimizer", _useMeshOptimizer);
@@ -84,7 +87,7 @@ namespace Voxelizer
             /////////////////////
             var timer = Stopwatch.StartNew();
 
-            Mesh mesh = VoxelUtil.VoxelizeTexture2D(_sprite.texture, _applyColorPerVertex);
+            Mesh mesh = VoxelUtil.VoxelizeTexture2D(_sprite.texture, _applyColorPerVertex, _scale);
 
             Texture2D texture = VoxelUtil.GenerateTextureMap(ref mesh, _sprite.texture );
 
