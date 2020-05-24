@@ -29,16 +29,17 @@ namespace Voxelizer
 
             GenerateVertices(ref mesh, colorBuffer, height, width, scale);
             GenerateNormals(ref mesh);
+
+            if (mesh.vertexCount >= Int16.MaxValue)
+            {
+                mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+            }
+
             GenerateTriangles(ref mesh, colorBuffer);
 
             if (applyColorPerVertex)
             {
                 GenerateVertexColors(ref mesh, colorBuffer);
-            }
-
-            if (mesh.vertexCount >= Int16.MaxValue)
-            {
-                mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
             }
 
             return mesh;
