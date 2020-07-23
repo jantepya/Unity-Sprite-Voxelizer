@@ -12,6 +12,4 @@ Open the Voxelizer menu by going to `Window/Voxelize Sprite`. Select a sprite to
 
 <img src="./Docs/menu.jpg" data-canonical-src="./Docs/menu.jpg"/>
 
-**Warning**: ensure that read/write is enabled in the sprite's Import Settings
-
 For best results, set sprite compression format to RGBA32 before converting
