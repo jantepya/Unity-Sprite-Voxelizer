@@ -82,7 +82,7 @@ namespace Voxelizer
             /////////////////////
             var timer = Stopwatch.StartNew();
             
-            Texture2D readableTexture = ReadTexture(_sprite.texture)
+            Texture2D readableTexture = ReadTexture(_sprite.texture);
             Mesh mesh = VoxelUtil.VoxelizeTexture2D(readableTexture, _applyColorPerVertex, _scale);
 
             Texture2D texture = VoxelUtil.GenerateTextureMap(ref mesh, readableTexture);
