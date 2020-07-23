@@ -36,12 +36,7 @@ namespace Voxelizer
             }
             else
             {
-                if (_sprite.texture.isReadable == false)
-                {
-                    GUI.enabled = false;
-                    debugText = "Read/Write needs to be enabled in the sprite's Import Settings";
-                }
-                else if (_sprite.texture.format != TextureFormat.RGBA32)
+                if (_sprite.texture.format != TextureFormat.RGBA32)
                 {
                     debugText = "For best results, set sprite compression format to RGBA32 before converting";
                 }
@@ -86,10 +81,11 @@ namespace Voxelizer
         {
             /////////////////////
             var timer = Stopwatch.StartNew();
+            
+            Texture2D readableTexture = ReadTexture(_sprite.texture)
+            Mesh mesh = VoxelUtil.VoxelizeTexture2D(readableTexture, _applyColorPerVertex, _scale);
 
-            Mesh mesh = VoxelUtil.VoxelizeTexture2D(_sprite.texture, _applyColorPerVertex, _scale);
-
-            Texture2D texture = VoxelUtil.GenerateTextureMap(ref mesh, _sprite.texture );
+            Texture2D texture = VoxelUtil.GenerateTextureMap(ref mesh, readableTexture);
 
             if (_useMeshOptimizer)
             {
@@ -169,6 +165,15 @@ namespace Voxelizer
             {
                 Debug.LogWarning("[Voxelizer] Texture Export failed: invalid path");
             }
+        }
+        
+        //Read texture independent of Read/Write enabled on the sprite
+        private Texture2D ReadTexture(Texture2D texture)
+        {
+            Texture2D newTexture = new Texture2D(texture.width, texture.height, texture.format, false);
+            newTexture.LoadRawTextureData(texture.GetRawTextureData());
+            newTexture.Apply();
+            return newTexture;
         }
     }
 }
