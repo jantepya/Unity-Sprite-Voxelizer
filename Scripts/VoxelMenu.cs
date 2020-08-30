@@ -79,25 +79,30 @@ namespace Voxelizer
 
         private void VoxelizeSprite()
         {
-            /////////////////////
-            var timer = Stopwatch.StartNew();
-            
             Texture2D readableTexture = ReadTexture(_sprite.texture);
-            Mesh mesh = VoxelUtil.VoxelizeTexture2D(readableTexture, _applyColorPerVertex, _scale);
 
+            ///////////////////// Mesh Benchmark
+            var timer = Stopwatch.StartNew();
+            Mesh mesh = VoxelUtil.VoxelizeTexture2D(readableTexture, _applyColorPerVertex, _scale);
+            timer.Stop();
+
+            string meshName = _sprite.name + VOXEL_NAME_POST_FIX;
+            mesh.name = meshName;
+
+            Debug.Log(string.Format("[Voxelizer] {0}: Mesh created after {1} milliseconds", mesh.name, timer.ElapsedMilliseconds));
+            ///////////////////////
+
+            ///////////////////// Texture Benchmark
+            timer = Stopwatch.StartNew();
             Texture2D texture = VoxelUtil.GenerateTextureMap(ref mesh, readableTexture);
+            timer.Stop();
+            Debug.Log(string.Format("[Voxelizer] {0}: Texture created after {1} milliseconds", mesh.name, timer.ElapsedMilliseconds));
+            ///////////////////////
 
             if (_useMeshOptimizer)
             {
                 MeshUtility.Optimize(mesh);
             }
-
-            timer.Stop();
-            ///////////////////////
-
-            string meshName = _sprite.name + VOXEL_NAME_POST_FIX;
-            mesh.name = meshName;
-            Debug.Log(string.Format("[Voxelizer] {0}: Mesh created after {1} milliseconds", meshName, timer.ElapsedMilliseconds));
 
             if (_createNewGameObject)
             {

@@ -224,13 +224,18 @@ namespace Voxelizer
 
             if (size == 0) return textureMap;
 
+            Color32[] colors = new Color32[colorMap.Count * size];
+
             foreach (var color in colorMap)
             {
+                int colorIndex = color.Value * size;
                 for (int i = 0; i < size; i++)
                 {
-                    textureMap.SetPixel(i, color.Value, color.Key);
+                    colors[colorIndex + i] = color.Key;
                 }
             }
+
+            textureMap.SetPixels32(colors);
 
             var uvs = new List<Vector2>(mesh.vertexCount);
             float offset = 1f / (2f * size);
