@@ -217,23 +217,22 @@ namespace Voxelizer
                     colorMap.Add(color, colorMap.Count);
                 }
             }
-
-            var size = colorMap.Count;
             
-            var textureMap = new Texture2D(size, size);
+            var textureMap = new Texture2D(1, colorMap.Count);
 
-            if (size == 0) return textureMap;
+            if (colorMap.Count == 0) return textureMap;
+
+            Color32[] colors = new Color32[colorMap.Count];
 
             foreach (var color in colorMap)
             {
-                for (int i = 0; i < size; i++)
-                {
-                    textureMap.SetPixel(i, color.Value, color.Key);
-                }
+                colors[color.Value] = color.Key;
             }
 
+            textureMap.SetPixels32(colors);
+
             var uvs = new List<Vector2>(mesh.vertexCount);
-            float offset = 1f / (2f * size);
+            float offset = 1f / (2f * colorMap.Count);
 
             for (int i = 0; i < colorBuffer.Length; i++)
             {
@@ -242,7 +241,7 @@ namespace Voxelizer
                 if (color.a == byte.MinValue || !colorMap.ContainsKey(color)) continue;
 
                 int index = colorMap[color];
-                float v = (float) index / (float) size;
+                float v = (float) index / (float) colorMap.Count;
 
                 for (int k = 0; k < CUBE_INDICES_COUNT; k++)
                 {

@@ -15,7 +15,7 @@ namespace Voxelizer
             EditorWindow.GetWindow<VoxelMenu>("Voxelizer Menu");
         }
 
-        private Sprite _sprite;
+        private Texture2D _sprite;
         private float _scale = 1.0f;
         private bool _useMeshOptimizer = true;
         private bool _saveMesh;
@@ -25,7 +25,7 @@ namespace Voxelizer
 
         private void OnGUI()
         {
-            _sprite = (Sprite)EditorGUILayout.ObjectField("Selected Sprite", _sprite, typeof(Sprite), true);
+            _sprite = (Texture2D)EditorGUILayout.ObjectField("Selected Sprite", _sprite, typeof(Texture2D), true);
 
             string debugText = null;
 
@@ -36,7 +36,7 @@ namespace Voxelizer
             }
             else
             {
-                if (_sprite.texture.format != TextureFormat.RGBA32)
+                if (_sprite.format != TextureFormat.RGBA32)
                 {
                     debugText = "For best results, set sprite compression format to RGBA32 before converting";
                 }
@@ -79,25 +79,30 @@ namespace Voxelizer
 
         private void VoxelizeSprite()
         {
-            /////////////////////
-            var timer = Stopwatch.StartNew();
-            
-            Texture2D readableTexture = ReadTexture(_sprite.texture);
-            Mesh mesh = VoxelUtil.VoxelizeTexture2D(readableTexture, _applyColorPerVertex, _scale);
+            Texture2D readableTexture = _sprite.isReadable ? _sprite : ReadTexture(_sprite);
 
+            ///////////////////// Mesh Benchmark
+            var timer = Stopwatch.StartNew();
+            Mesh mesh = VoxelUtil.VoxelizeTexture2D(readableTexture, _applyColorPerVertex, _scale);
+            timer.Stop();
+
+            string meshName = _sprite.name + VOXEL_NAME_POST_FIX;
+            mesh.name = meshName;
+
+            Debug.Log(string.Format("[Voxelizer] {0}: Mesh created after {1} milliseconds", mesh.name, timer.ElapsedMilliseconds));
+            ///////////////////////
+
+            ///////////////////// Texture Benchmark
+            timer = Stopwatch.StartNew();
             Texture2D texture = VoxelUtil.GenerateTextureMap(ref mesh, readableTexture);
+            timer.Stop();
+            Debug.Log(string.Format("[Voxelizer] {0}: Texture created after {1} milliseconds", mesh.name, timer.ElapsedMilliseconds));
+            ///////////////////////
 
             if (_useMeshOptimizer)
             {
                 MeshUtility.Optimize(mesh);
             }
-
-            timer.Stop();
-            ///////////////////////
-
-            string meshName = _sprite.name + VOXEL_NAME_POST_FIX;
-            mesh.name = meshName;
-            Debug.Log(string.Format("[Voxelizer] {0}: Mesh created after {1} milliseconds", meshName, timer.ElapsedMilliseconds));
 
             if (_createNewGameObject)
             {
@@ -168,7 +173,7 @@ namespace Voxelizer
         }
         
         //Read texture independent of Read/Write enabled on the sprite
-        private Texture2D ReadTexture(Texture2D texture)
+        private static Texture2D ReadTexture(Texture2D texture)
         {
             Texture2D newTexture = new Texture2D(texture.width, texture.height, texture.format, false);
             newTexture.LoadRawTextureData(texture.GetRawTextureData());
